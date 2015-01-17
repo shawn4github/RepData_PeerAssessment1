@@ -48,6 +48,10 @@ if (!require("scales", quietly=TRUE)) {
     install.packages("scales", dependencies=TRUE)
 }
 
+if (!require("Hmisc", quietly=TRUE)) {
+    install.packages("Hmisc", dependencies=TRUE)
+}
+
 if (!require("plyr", quietly=TRUE)) {
     install.packages("plyr", dependencies=TRUE)
 }
@@ -145,11 +149,27 @@ tail(processedData, n=3)
 # Calculate sum of steps by date
 stepSumByDate <- aggregate(steps ~ date, data=processedData, sum, na.action=na.pass)
 
+# Get bins label elements (x, y)
+histObj <- hist(stepSumByDate$steps, plot=FALSE)
+binLabel_x <- histObj$mids + 100
+binLabel_y <- histObj$counts - 0.75
+binLabel <- histObj$counts
+
+# Frequency peak value on figure
+peak <- max(binLabel)
+
 # The following is the histogram of the total number of steps taken each day
-hist(stepSumByDate$steps, 
-     col = gray(0.9), 
-     main = "Histogram of Total Steps Taken Daily", 
+hist(stepSumByDate$steps,
+     main = "Histogram of Total Steps Taken Daily (Original Data)", 
      xlab = "Total Steps Taken Daily")
+grid()
+hist(stepSumByDate$steps,
+     add = TRUE,
+     labels = FALSE,
+     col = c(rep("lightgray", 2),"lightblue", rep("lightgray", 2)))
+minor.tick(nx=5, ny=1, tick.ratio=0.5)
+text(binLabel_x, binLabel_y, binLabel)
+box()
 ```
 
 ![plot of chunk Figure1_HistogramOrigin](figure/Figure1_HistogramOrigin-1.png) 
@@ -182,8 +202,7 @@ dateTime <- c(paste0(as.character(sprintf("%02d", dateTime$hour)), ":",
 
 # The following is the figure of the mean of steps taken per time interval across measured 61 days
 plot(stepMeanPerInterval$interval, stepMeanPerInterval$steps,
-     type = "l", 
-     col = "red",
+     type = "n", 
      axes = FALSE,
      main = "Mean of Steps per 5-minute Intervals Daily",
      xlab = "Daily 5-minute Time Intervals (00:00-23:55)", 
@@ -192,6 +211,7 @@ axis(1, seq(0,2400,100), dateTime[seq(1,289,12)])
 axis(2)
 abline(v = seq(0,2400,100), col = "lightgray", lty = "dotted")
 abline(h = seq(0,200,50), col = "lightgray", lty = "dotted")
+lines(stepMeanPerInterval$interval, stepMeanPerInterval$steps, col = "red",)
 box()
 ```
 
@@ -263,11 +283,27 @@ tail(rawDataImputed, n=3)
 processedDataImputed <- rawDataImputed
 stepSumByDateNew <- aggregate(steps ~ date, data=processedDataImputed, sum, na.action=na.pass)
 
+# Get bins label elements (x, y)
+histObjNew <- hist(stepSumByDateNew$steps, plot=FALSE)
+binLabelNew_x <- histObjNew$mids + 100
+binLabelNew_y <- histObjNew$counts - 0.75
+binLabelNew <- histObjNew$counts
+
+# Frequency peak value on figure
+peakNew <- max(binLabelNew)
+
 # The following is the histogram of the total number of steps taken each day
 hist(stepSumByDateNew$steps,
-     col = gray(0.8), 
-     main = "Histogram of Total Steps Taken Daily (Data Imputed)", 
+     main = "Histogram of Total Steps Taken Daily (Data Imputed)",
      xlab = "Total Steps Taken Daily")
+grid()
+hist(stepSumByDateNew$steps,
+     add = TRUE,
+     labels = FALSE,
+     col = c(rep("lightgray", 2),"lightblue", rep("lightgray", 2)))
+minor.tick(nx=5, ny=1, tick.ratio=0.5)
+text(binLabelNew_x, binLabelNew_y, binLabelNew)
+box()
 ```
 
 ![plot of chunk Figure3_HistogramImputed](figure/Figure3_HistogramImputed-1.png) 
@@ -281,7 +317,7 @@ stepMedianDailyNew <- as.character(round(median(stepSumByDateNew$steps)))
 ```
 So the new mean of total number of steps taken per day is <b>10766</b>, and the new median of total number of steps taken per day is <b>10762</b>.
 
-Because I used the mean value of 5-minute interval across the 61 measured days filling in all of the missing values in the dataset, the new mean value remained the same as the previous one. However, the new median value shifted to a lower value slightly. Meanwhile, when we look at the histogram (with data imputed), we found that the frequency of a range from 10000-15000 steps daily got a big increase comparing to the previous histogram (with original data).   
+Because I used the mean value of 5-minute interval across the 61 measured days filling in all of the missing values in the dataset, the new mean value remained the same as the previous one. However, the new median value shifted to a lower value slightly. Meanwhile, when we look at the histogram (with data imputed), we found that the frequency of a range from 10000-15000 steps daily got a big increase comparing to the previous histogram (increased from <b>28</b> to <b>36</b>).   
 
 ***
 ### Task 5: Are there differences in activity patterns between weekdays and weekends?
